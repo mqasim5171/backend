@@ -1,33 +1,53 @@
-const express = require('express')
-const app = express()
-const cors = require('cors')
+const express = require('express');
+const cors = require('cors');
 const mongoose = require('mongoose');
-require('dotenv').config()
+require('dotenv').config();
 
+const app = express();
 const port = process.env.PORT || 5000;
-//middleware
+
+// ✅ Middleware
 app.use(express.json());
+
+// ✅ CORS setup (no trailing slash!)
 app.use(cors({
-  origin: ['https://rococo-haupia-75bf78.netlify.app/'],
+  origin: [
+    'http://localhost:5173', // Vite default
+    'http://localhost:3000', // React default
+    'https://rococo-haupia-75bf78.netlify.app' // Deployed frontend
+  ],
   credentials: true
-}))
+}));
 
+// ✅ Routes
+const bookRoutes = require('./src/books/book.route');
+// If you add user/auth routes later:
+// const userRoutes = require('./src/users/user.route');
 
-//routes
-const bookRoutes = require('./src/books/book.route')
+app.use("/api/books", bookRoutes);
+// app.use("/api/users", userRoutes);
 
-app.use("/api/books",bookRoutes)
-
-
+// ✅ Database & server startup
 async function main() {
-    await mongoose.connect(process.env.DB_URL);
-    app.use('/',( _req,res ) => {
-        res.send("Book store server is running");
+  try {
+    await mongoose.connect(process.env.DB_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
     });
+    console.log("✅ MongoDB connected successfully!");
+
+    // Default route (health check)
+    app.get('/', (_req, res) => {
+      res.send("📚 Book store server is running...");
+    });
+
+    app.listen(port, () => {
+      console.log(`🚀 Server is running on port ${port}`);
+    });
+  } catch (err) {
+    console.error("❌ Database connection error:", err);
+    process.exit(1);
   }
+}
 
-  main().then(()=> console.log("Mongodb connected successfully!")).catch(err => console.log(err));
-
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-  })
+main();
