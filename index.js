@@ -14,7 +14,7 @@ app.use(cors({
   origin: [
     'http://localhost:5173', // Vite default
     'http://localhost:3000', // React default
-    'https://rococo-haupia-75bf78.netlify.app' // Deployed frontend
+    'https://bookstore-client-mern.netlify.app' // Deployed frontend
   ],
   credentials: true
 }));
